@@ -1,0 +1,84 @@
+html, body {
+  height: 100%;
+  background: rgb(20, 20, 25);
+}
+
+.buttons {
+  display: flex;
+  flex-flow: row wrap;
+  height: 100%;
+}
+
+.buttons__item {
+  box-sizing: border-box;
+  flex: 1 0 auto;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1em;
+}
+
+.switch {
+  background: none;
+  border: 0;
+  color: white;
+  padding: 0 60px 0 0;
+  white-space: nowrap;
+  font-size: 14px;
+  text-align: center;
+  outline: 0;
+  position: relative;
+}
+
+.switch::before {
+  background: rgb(0, 191, 255);
+  transition: background 0.225s 0s ease-out;
+  content: "on";
+  line-height: 23px;
+  font-size: 12px;
+  text-transform: lowercase;
+  padding: 0 4px;
+  text-align: left;
+  width: 36px;
+  border-radius: 20px;
+  height: 24px;
+  border: 2px solid white;
+  display: block;
+  position: absolute;
+  right: 0;
+  margin: auto;
+  top: 0;
+  bottom: 0;
+}
+
+.switch::after {
+  transition: transform 0.225s ease-out;
+  content: "";
+  display: block;
+  top: -32px;
+  position: absolute;
+  background: white;
+  border-radius: 50%;
+  height: 22px;
+  width: 22px;
+  right: 3px;
+  transform: translateX(0);
+  margin: auto;
+  top: 0;
+  bottom: 0;
+}
+
+.switch--off {}
+
+.switch--off::before {
+  content: "off";
+  background: none;
+  transition-duration: 0.1135s;
+  transition-delay: 0.09s;
+  text-align: right;
+}
+
+.switch--off::after {
+  transform: translateX(-20px);
+}

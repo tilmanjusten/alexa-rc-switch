@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="de">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Alexa für alle Lichter</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body>
+        <div class="buttons">
+            <div class="buttons__item">
+                <button class="switch switch--off switch--alle-lichter" onclick="sendSwitch(this)" data-name="alle-lichter">Alle Lichter</button>
+            </div>
+            <div class="buttons__item">
+                <button class="switch switch--off switch--wohnzimmerlicht" onclick="sendSwitch(this)" data-name="wohnzimmerlicht">Wohnzimmerlicht</button>
+            </div>
+            <div class="buttons__item">
+                <button class="switch switch--off switch--sofalicht" onclick="sendSwitch(this)" data-name="sofalicht">Sofa &amp; Regal</button>
+            </div>
+            <div class="buttons__item">
+                <button class="switch switch--off switch--lichterkette" onclick="sendSwitch(this)" data-name="lichterkette">Lichterkette</button>
+            </div>
+            <div class="buttons__item">
+                <button class="switch switch--off switch--galerielicht" onclick="sendSwitch(this)" data-name="galerielicht">Galerielicht</button>
+            </div>
+            <div class="buttons__item">
+                <button class="switch switch--off switch--tuerlicht" onclick="sendSwitch(this)" data-name="tuerlicht">Tür</button>
+            </div>
+        </div>
+        <script src="scripts.js"></script>
+    </body>
+</html>
