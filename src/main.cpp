@@ -115,6 +115,7 @@ void sendDeviceState(unsigned char device_id, String device_name, String device_
 
   sprintf(content_buffer, "{ \"device_id\": \"%d\", \"device_name\": \"%s\", \"device_name_id\": \"%s\", \"state\": \"%s\" }", device_id, device_name.c_str(), device_name_id.c_str(), state_str.c_str());
 
+  server.sendHeader("Access-Control-Allow-Origin", "*");
   server.send(200, "application/json", content_buffer);
 }
 
@@ -155,6 +156,7 @@ void handleWebRequests()
     message += " NAME:" + server.argName(i) + "\n VALUE:" + server.arg(i) + "\n";
   }
 
+  server.sendHeader("Access-Control-Allow-Origin", "*");
   server.send(404, "text/plain", message);
 
   Serial.println(message);
