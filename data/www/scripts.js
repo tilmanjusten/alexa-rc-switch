@@ -2,12 +2,23 @@ const devices = [{
   'id': 0,
   'name': 'Alle Lichter',
   'name_id': 'alle-lichter',
-  'state': 'off'
+  'state': 'off',
+  'dependents': [
+    'wohnzimmerlicht',
+    'sofalicht',
+    'lichterkette',
+    'tuerlicht',
+    'galerielicht'
+  ]
 }, {
   'id': 1,
   'name': 'Wohnzimmerlicht',
   'name_id': 'wohnzimmerlicht',
-  'state': 'off'
+  'state': 'off',
+  'dependents': [
+    'sofalicht',
+    'lichterkette'
+  ]
 }, {
   'id': 2,
   'name': 'Sofa & Regal',
@@ -29,6 +40,36 @@ const devices = [{
   'name_id': 'galerielicht',
   'state': 'off'
 }];
+
+const updateStateDependencies = (deviceIndex) => {
+  const device = devices[deviceIndex]
+
+  // update dependents
+  if (device.hasOwnProperty('dependents')) {
+    device.dependents.forEach(dependencyNameId => {
+      const dependencyIndex = devices.findIndex(device => device.name_id === dependencyNameId)
+
+      devices[dependencyIndex].state = device.state
+    })
+  }
+
+  // get parents
+  let parents = devices.filter(dep => dep.hasOwnProperty('dependents') && dep.dependents.includes(device.name_id))
+
+  // loop parents and check if dependents have same state
+  parents.forEach((parent, parentIndex) => {
+    let childStates = parent.dependents.map(depNameId => {
+      let state = devices.find(child => child.name_id === depNameId).state
+
+      return state === 'on' ? 1 : 0
+    })
+
+    // parent is "on" if all dependents are enabled
+    state = childStates.reduce((prev, cur) => prev + cur)
+
+    devices[parentIndex].state = state === parent.dependents.length ? 'on' : 'off'
+  })
+}
 
 const updateUI = () => {
   devices.forEach(device => {
@@ -88,12 +129,7 @@ const toggleSwitch = evt => {
 
       devices[deviceIndex].state = response.state
 
-      // update device groups
-      if (deviceName === 'alle-lichter') {
-        ['wohnzimmerlicht', 'lichterkette', 'galerielicht', 'tuerlicht', 'sofalicht'].forEach(switchOffByDeviceNameId)
-      } else if (deviceName === 'wohnzimmerlicht') {
-        ['lichterkette', 'sofalicht'].forEach(switchOffByDeviceNameId)
-      }
+      updateStateDependencies(deviceIndex)
 
       updateUI()
     } else {
