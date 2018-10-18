@@ -43,7 +43,8 @@ bool switch_D_state = false;
 // WLAN SETUP
 // -----------------------------------------------------------------------------
 
-void wifiSetup() {
+void wifiSetup()
+{
   WiFi.mode(WIFI_STA);
 
   // Connect
@@ -51,7 +52,8 @@ void wifiSetup() {
   WiFi.begin(WIFI_SSID, WIFI_PASS);
 
   // Wait
-  while (WiFi.status() != WL_CONNECTED) {
+  while (WiFi.status() != WL_CONNECTED)
+  {
     Serial.print(".");
     delay(100);
   }
@@ -61,43 +63,51 @@ void wifiSetup() {
   Serial.printf("Verbunden! SSID: %s, IP Adresse: %s\n", WiFi.SSID().c_str(), WiFi.localIP().toString().c_str());
 }
 
-bool getDeviceState(unsigned char device_id) {
+bool getDeviceState(unsigned char device_id)
+{
   bool state = false;
 
   // Alle Lichter
-  if (device_id == 0) {
+  if (device_id == 0)
+  {
     state = switch_A_state && switch_B_state && switch_C_state && switch_D_state;
   }
 
   // Wohnzimmerlicht
-  else if (device_id == 1) {
+  else if (device_id == 1)
+  {
     state = switch_A_state && switch_B_state;
   }
 
   // Sofalicht
-  else if (device_id == 2) {
+  else if (device_id == 2)
+  {
     state = switch_B_state;
   }
 
   // Lichterkette
-  else if (device_id == 3) {
+  else if (device_id == 3)
+  {
     state = switch_A_state;
   }
 
   // Türlicht
-  else if (device_id == 4) {
+  else if (device_id == 4)
+  {
     state = switch_C_state;
   }
 
   // Galerielicht
-  else if (device_id == 5) {
+  else if (device_id == 5)
+  {
     state = switch_D_state;
   }
 
   return state;
 }
 
-void sendDeviceState(unsigned char device_id, String device_name, String device_name_id, bool state) {
+void sendDeviceState(unsigned char device_id, String device_name, String device_name_id, bool state)
+{
   String state_str = state ? "on" : "off";
   char content_buffer[160];
 
@@ -106,7 +116,8 @@ void sendDeviceState(unsigned char device_id, String device_name, String device_
   server.send(200, "application/json", content_buffer);
 }
 
-void callbackSetState(unsigned char device_id, String device_name, bool state, unsigned char value) {
+void callbackSetState(unsigned char device_id, String device_name, bool state, unsigned char value)
+{
   Serial.print("Device: ");
   Serial.println(device_name);
   Serial.print("State: ");
@@ -120,12 +131,14 @@ void callbackSetState(unsigned char device_id, String device_name, bool state, u
   switch_value = value;
 }
 
-void handleDeviceAction(unsigned char device_id, String device_name, String device_name_id, bool state) {
+void handleDeviceAction(unsigned char device_id, String device_name, String device_name_id, bool state)
+{
   callbackSetState(device_id, device_name, state, 0);
   sendDeviceState(device_id, device_name, device_name_id, state);
 }
 
-void handleWebRequests() {
+void handleWebRequests()
+{
   String message = "File Not Detected\n\n";
   message += "URI: ";
   message += server.uri();
@@ -135,7 +148,8 @@ void handleWebRequests() {
   message += server.args();
   message += "\n";
 
-  for (uint8_t i = 0; i < server.args(); i++) {
+  for (uint8_t i = 0; i < server.args(); i++)
+  {
     message += " NAME:" + server.argName(i) + "\n VALUE:" + server.arg(i) + "\n";
   }
 
@@ -144,8 +158,10 @@ void handleWebRequests() {
   Serial.println(message);
 }
 
-void setupWebserver(void) {
-  if (MDNS.begin("Switch Station")) {
+void setupWebserver(void)
+{
+  if (MDNS.begin("Switch Station"))
+  {
     Serial.println("MDNS responder started");
   }
 
@@ -249,7 +265,8 @@ void setupWebserver(void) {
   Serial.println("HTTP server started");
 }
 
-void setupDevices() {
+void setupDevices()
+{
   fauxmo.addDevice("Alle Lichter");    //ID 0
   fauxmo.addDevice("Wohnzimmerlicht"); //ID 1
   fauxmo.addDevice("Sofalicht");       //ID 2
@@ -265,8 +282,10 @@ void setupDevices() {
   fauxmo.onSetState(callbackSetState);
 }
 
-void handleSwitchRequest(unsigned char device_id, bool state) {
-  if (run_switch == false) {
+void handleSwitchRequest(unsigned char device_id, bool state)
+{
+  if (run_switch == false)
+  {
     return;
   }
 
@@ -274,9 +293,11 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
   run_switch = false;
 
   // Enable
-  if (state) {
+  if (state)
+  {
     // Alle Lichter
-    if (device_id == 0) {
+    if (device_id == 0)
+    {
       Serial.println("Alle Lichter AN");
       mySwitch.send(switch_send_A_on, 24);
       delay(700);
@@ -293,7 +314,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Wohnzimmerlicht
-    else if (device_id == 1) {
+    else if (device_id == 1)
+    {
       Serial.println("Wohnzimmerlicht AN");
       mySwitch.send(switch_send_A_on, 24);
       delay(700);
@@ -304,7 +326,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Sofalicht
-    else if (device_id == 2) {
+    else if (device_id == 2)
+    {
       Serial.println("Sofalicht AN");
       mySwitch.send(switch_send_B_on, 24);
       delay(700);
@@ -312,7 +335,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Lichterkette
-    else if (device_id == 3) {
+    else if (device_id == 3)
+    {
       Serial.println("Lichterkette AN");
       mySwitch.send(switch_send_A_on, 24);
       delay(700);
@@ -320,7 +344,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Eingangslicht
-    else if (device_id == 4) {
+    else if (device_id == 4)
+    {
       Serial.println("Türlicht AN");
       mySwitch.send(switch_send_C_on, 24);
       switch_C_state = true;
@@ -328,7 +353,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Galerielicht
-    else if (device_id == 5) {
+    else if (device_id == 5)
+    {
       Serial.println("Galerielicht AN");
       mySwitch.send(switch_send_D_on, 24);
       delay(700);
@@ -337,9 +363,11 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
   }
 
   // Disable
-  else {
+  else
+  {
     // Alle Lichter
-    if (device_id == 0) {
+    if (device_id == 0)
+    {
       Serial.println("Alle Lichter AUS");
       mySwitch.send(switch_send_A_off, 24);
       delay(700);
@@ -356,7 +384,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Wohnzimmerlicht
-    else if (device_id == 1) {
+    else if (device_id == 1)
+    {
       Serial.println("Wohnzimmerlicht AUS");
       mySwitch.send(switch_send_A_off, 24);
       delay(700);
@@ -367,7 +396,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Sofalicht
-    else if (device_id == 2) {
+    else if (device_id == 2)
+    {
       Serial.println("Sofalicht AUS");
       mySwitch.send(switch_send_B_off, 24);
       delay(700);
@@ -375,7 +405,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Lichterkette
-    else if (device_id == 3) {
+    else if (device_id == 3)
+    {
       Serial.println("Lichterkette AUS");
       mySwitch.send(switch_send_A_off, 24);
       delay(700);
@@ -383,7 +414,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Türlicht
-    else if (device_id == 4) {
+    else if (device_id == 4)
+    {
       Serial.println("Türlicht AUS");
       mySwitch.send(switch_send_C_off, 24);
       delay(700);
@@ -391,7 +423,8 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
     }
 
     // Galerielicht
-    else if (device_id == 5) {
+    else if (device_id == 5)
+    {
       Serial.println("Galerielicht AUS");
       mySwitch.send(switch_send_D_off, 24);
       delay(700);
@@ -400,32 +433,47 @@ void handleSwitchRequest(unsigned char device_id, bool state) {
   }
 }
 
-bool loadFromSpiffs(String path) {
+bool loadFromSpiffs(String path)
+{
   String dataType = "text/plain";
 
-  if (path.endsWith("/")) path += "index.html";
+  if (path.endsWith("/"))
+    path += "index.html";
 
-  if (path.endsWith(".src")) path = path.substring(0, path.lastIndexOf("."));
-  else if (path.endsWith(".html")) dataType = "text/html";
-  else if (path.endsWith(".htm")) dataType = "text/html";
-  else if (path.endsWith(".css")) dataType = "text/css";
-  else if (path.endsWith(".js")) dataType = "application/javascript";
-  else if (path.endsWith(".png")) dataType = "image/png";
-  else if (path.endsWith(".gif")) dataType = "image/gif";
-  else if (path.endsWith(".jpg")) dataType = "image/jpeg";
-  else if (path.endsWith(".ico")) dataType = "image/x-icon";
-  else if (path.endsWith(".xml")) dataType = "text/xml";
-  else if (path.endsWith(".pdf")) dataType = "application/pdf";
-  else if (path.endsWith(".zip")) dataType = "application/zip";
+  if (path.endsWith(".src"))
+    path = path.substring(0, path.lastIndexOf("."));
+  else if (path.endsWith(".html"))
+    dataType = "text/html";
+  else if (path.endsWith(".htm"))
+    dataType = "text/html";
+  else if (path.endsWith(".css"))
+    dataType = "text/css";
+  else if (path.endsWith(".js"))
+    dataType = "application/javascript";
+  else if (path.endsWith(".png"))
+    dataType = "image/png";
+  else if (path.endsWith(".gif"))
+    dataType = "image/gif";
+  else if (path.endsWith(".jpg"))
+    dataType = "image/jpeg";
+  else if (path.endsWith(".ico"))
+    dataType = "image/x-icon";
+  else if (path.endsWith(".xml"))
+    dataType = "text/xml";
+  else if (path.endsWith(".pdf"))
+    dataType = "application/pdf";
+  else if (path.endsWith(".zip"))
+    dataType = "application/zip";
 
   File dataFile = SPIFFS.open(path.c_str(), "r");
 
-  if (server.hasArg("download")) {
+  if (server.hasArg("download"))
+  {
     dataType = "application/octet-stream";
   }
 
-  if (server.streamFile(dataFile, dataType) != dataFile.size()) {
-
+  if (server.streamFile(dataFile, dataType) != dataFile.size())
+  {
   }
 
   dataFile.close();
@@ -433,7 +481,8 @@ bool loadFromSpiffs(String path) {
   return true;
 }
 
-void setup() {
+void setup()
+{
   Serial.begin(SERIAL_BAUDRATE);
   Serial.println("Nach dem Verbinden, sage 'Echo, schalte <Gerät> an' oder 'aus'");
 
@@ -459,7 +508,8 @@ void setup() {
   setupWebserver();
 }
 
-void loop() {
+void loop()
+{
   // Since fauxmoESP 2.0 the library uses the "compatibility" mode by
   // default, this means that it uses WiFiUdp class instead of AsyncUDP.
   // The later requires the Arduino Core for ESP8266 staging version
