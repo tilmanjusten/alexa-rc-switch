@@ -7,11 +7,10 @@
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
-#include <WiFiClient.h>
-#include <RCSwitch.h>
-#include "fauxmoESP.h"
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
+#include <RCSwitch.h>
+#include "fauxmoESP.h"
 #include <FS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
@@ -23,7 +22,7 @@
 
 fauxmoESP fauxmo;
 
-ESP8266WebServer server(80);
+ESP8266WebServer server(HTTP_PORT);
 
 // Dip Switches Listening to: ID 1119583 / 1119519
 // 1 2 3 4 5
@@ -140,7 +139,7 @@ void handleDeviceAction(unsigned char device_id, String device_name, String devi
   sendDeviceState(device_id, device_name, device_name_id, state);
 }
 
-void handleWebRequests()
+void handleWebRequests404()
 {
   String message = "File Not Detected\n\n";
   message += "URI: ";
@@ -262,7 +261,7 @@ void setupWebserver(void)
   });
 
   // 404
-  server.onNotFound(handleWebRequests);
+  server.onNotFound(handleWebRequests404);
 
   // Start server
   server.begin();
@@ -304,17 +303,17 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Alle Lichter AN");
       mySwitch.send(switch_send_A_on, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_A_state = true;
       mySwitch.send(switch_send_B_on, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_B_state = true;
-      mySwitch.send(switch_send_C_on, 24);
-      delay(700);
-      switch_C_state = true;
       mySwitch.send(switch_send_D_on, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_D_state = true;
+      mySwitch.send(switch_send_C_on, 24);
+      delay(DELAY_SWITCH);
+      switch_C_state = true;
     }
 
     // Wohnzimmerlicht
@@ -322,10 +321,10 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Wohnzimmerlicht AN");
       mySwitch.send(switch_send_A_on, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_A_state = true;
       mySwitch.send(switch_send_B_on, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_B_state = true;
     }
 
@@ -334,7 +333,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Sofalicht AN");
       mySwitch.send(switch_send_B_on, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_B_state = true;
     }
 
@@ -343,7 +342,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Lichterkette AN");
       mySwitch.send(switch_send_A_on, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_A_state = true;
     }
 
@@ -361,7 +360,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Galerielicht AN");
       mySwitch.send(switch_send_D_on, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_D_state = true;
     }
   }
@@ -374,17 +373,17 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Alle Lichter AUS");
       mySwitch.send(switch_send_A_off, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_A_state = false;
       mySwitch.send(switch_send_B_off, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_B_state = false;
-      mySwitch.send(switch_send_C_off, 24);
-      delay(700);
-      switch_C_state = false;
       mySwitch.send(switch_send_D_off, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_D_state = false;
+      mySwitch.send(switch_send_C_off, 24);
+      delay(DELAY_SWITCH);
+      switch_C_state = false;
     }
 
     // Wohnzimmerlicht
@@ -392,10 +391,10 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Wohnzimmerlicht AUS");
       mySwitch.send(switch_send_A_off, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_A_state = false;
       mySwitch.send(switch_send_B_off, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_B_state = false;
     }
 
@@ -404,7 +403,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Sofalicht AUS");
       mySwitch.send(switch_send_B_off, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_B_state = false;
     }
 
@@ -413,7 +412,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Lichterkette AUS");
       mySwitch.send(switch_send_A_off, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_A_state = false;
     }
 
@@ -422,7 +421,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Türlicht AUS");
       mySwitch.send(switch_send_C_off, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_C_state = false;
     }
 
@@ -431,7 +430,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     {
       Serial.println("Galerielicht AUS");
       mySwitch.send(switch_send_D_off, 24);
-      delay(700);
+      delay(DELAY_SWITCH);
       switch_D_state = false;
     }
   }
@@ -488,13 +487,13 @@ bool loadFromSpiffs(String path)
 void setupOTA()
 {
   // Port defaults to 8266
-  ArduinoOTA.setPort(8266);
+  ArduinoOTA.setPort(OTA_PORT);
 
   // Hostname defaults to esp8266-[ChipID]
-  ArduinoOTA.setHostname("lichter");
+  ArduinoOTA.setHostname(OTA_HOSTNAME);
 
   // No authentication by default
-  ArduinoOTA.setPassword((const char *)"Braune0_flasche");
+  ArduinoOTA.setPassword((const char *)OTA_PASSWORD);
 
   ArduinoOTA.onStart([]() {
     Serial.println("Start");
@@ -534,7 +533,7 @@ void setup()
   // Send on GPIO2
   mySwitch.enableTransmit(2);
 
-  // Wifi
+  // WiFi
   wifiSetup();
 
   // LED
@@ -551,7 +550,10 @@ void setup()
   fauxmo.enable(false);
   fauxmo.enable(true);
 
+  // Switches
   setupDevices();
+
+  // Webserver
   SPIFFS.begin();
   setupWebserver();
 }
