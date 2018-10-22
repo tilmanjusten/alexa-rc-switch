@@ -10,15 +10,17 @@
 #include <ESP8266WebServer.h>
 #include <ESP8266mDNS.h>
 #include <RCSwitch.h>
-#include "fauxmoESP.h"
+#include <fauxmoESP.h>
 #include <FS.h>
 #include <WiFiUdp.h>
 #include <ArduinoOTA.h>
+#include <Log.h>
 
 #include "secrets.h"
 
+#define MODE_DEVELOPMENT LOG_MODE_SILENT
 #define SERIAL_BAUDRATE 115200
-#define LED 2
+#define DELAY_SWITCH 700
 
 fauxmoESP fauxmo;
 
@@ -28,6 +30,8 @@ ESP8266WebServer server(HTTP_PORT);
 // 1 2 3 4 5
 // 1 0 1 0 1
 RCSwitch mySwitch = RCSwitch();
+
+Log l(MODE_DEVELOPMENT);
 
 bool run_switch = false;
 unsigned char switch_device_id = 0;
@@ -92,7 +96,7 @@ bool getDeviceState(unsigned char device_id)
     state = switch_A_state;
   }
 
-  // Türlicht
+  // Tischregal
   else if (device_id == 4)
   {
     state = switch_C_state;
@@ -120,12 +124,12 @@ void sendDeviceState(unsigned char device_id, String device_name, String device_
 
 void callbackSetState(unsigned char device_id, String device_name, bool state, unsigned char value)
 {
-  Serial.print("Device: ");
-  Serial.println(device_name);
-  Serial.print("State: ");
-  Serial.println(state);
-  Serial.print("Value: ");
-  Serial.println(value);
+  l.l("Device: ");
+  l.ln(device_name.c_str());
+  l.l("State: ");
+  l.ln(state);
+  l.l("Value: ");
+  l.ln(value);
 
   run_switch = true;
   switch_device_id = device_id;
@@ -207,12 +211,12 @@ void setupWebserver(void)
     handleDeviceAction(3, "Lichterkette", "lichterkette", false);
   });
 
-  server.on("/switch/tuerlicht/on", []() {
-    handleDeviceAction(4, "Türlicht", "tuerlicht", true);
+  server.on("/switch/tischregal/on", []() {
+    handleDeviceAction(4, "Tischregal", "tischregal", true);
   });
 
-  server.on("/switch/tuerlicht/off", []() {
-    handleDeviceAction(4, "Türlicht", "tuerlicht", false);
+  server.on("/switch/tischregal/off", []() {
+    handleDeviceAction(4, "Tischregal", "tischregal", false);
   });
 
   server.on("/switch/galerielicht/on", []() {
@@ -248,10 +252,10 @@ void setupWebserver(void)
     sendDeviceState(3, "Lichterkette", "lichterkette", state);
   });
 
-  server.on("/state/tuerlicht", []() {
+  server.on("/state/tischregal", []() {
     bool state = getDeviceState(4);
 
-    sendDeviceState(4, "Türlicht", "tuerlicht", state);
+    sendDeviceState(4, "Tischregal", "tischregal", state);
   });
 
   server.on("/state/galerielicht", []() {
@@ -274,13 +278,14 @@ void setupDevices()
   fauxmo.addDevice("Wohnzimmerlicht"); //ID 1
   fauxmo.addDevice("Sofalicht");       //ID 2
   fauxmo.addDevice("Lichterkette");    //ID 3
-  fauxmo.addDevice("Türlicht");        //ID 4
+  fauxmo.addDevice("Tischregal");      //ID 4
   fauxmo.addDevice("Galerielicht");    //ID 5
 
+#if MODE_DEVELOPMENT == LOG_MODE_VERBOSE
   fauxmo.onSetState([](unsigned char device_id, String device_name, bool state, unsigned char value) {
     Serial.printf("[MAIN] Device #%d (%s) state: %s value: %d\n", device_id, device_name.c_str(), state ? "ON" : "OFF", value);
-    digitalWrite(LED, !state);
   });
+#endif
 
   fauxmo.onSetState(callbackSetState);
 }
@@ -301,28 +306,33 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     // Alle Lichter
     if (device_id == 0)
     {
-      Serial.println("Alle Lichter AN");
+
+      l.ln("Alle Lichter AN");
       mySwitch.send(switch_send_A_on, 24);
       delay(DELAY_SWITCH);
       switch_A_state = true;
+
       mySwitch.send(switch_send_B_on, 24);
       delay(DELAY_SWITCH);
       switch_B_state = true;
-      mySwitch.send(switch_send_D_on, 24);
-      delay(DELAY_SWITCH);
-      switch_D_state = true;
+
       mySwitch.send(switch_send_C_on, 24);
       delay(DELAY_SWITCH);
       switch_C_state = true;
+
+      mySwitch.send(switch_send_D_on, 24);
+      delay(DELAY_SWITCH);
+      switch_D_state = true;
     }
 
     // Wohnzimmerlicht
     else if (device_id == 1)
     {
-      Serial.println("Wohnzimmerlicht AN");
+      l.ln("Wohnzimmerlicht AN");
       mySwitch.send(switch_send_A_on, 24);
       delay(DELAY_SWITCH);
       switch_A_state = true;
+
       mySwitch.send(switch_send_B_on, 24);
       delay(DELAY_SWITCH);
       switch_B_state = true;
@@ -331,7 +341,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     // Sofalicht
     else if (device_id == 2)
     {
-      Serial.println("Sofalicht AN");
+      l.ln("Sofalicht AN");
       mySwitch.send(switch_send_B_on, 24);
       delay(DELAY_SWITCH);
       switch_B_state = true;
@@ -340,7 +350,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     // Lichterkette
     else if (device_id == 3)
     {
-      Serial.println("Lichterkette AN");
+      l.ln("Lichterkette AN");
       mySwitch.send(switch_send_A_on, 24);
       delay(DELAY_SWITCH);
       switch_A_state = true;
@@ -349,7 +359,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     // Eingangslicht
     else if (device_id == 4)
     {
-      Serial.println("Türlicht AN");
+      l.ln("Tischregal AN");
       mySwitch.send(switch_send_C_on, 24);
       switch_C_state = true;
       delay(50);
@@ -358,7 +368,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     // Galerielicht
     else if (device_id == 5)
     {
-      Serial.println("Galerielicht AN");
+      l.ln("Galerielicht AN");
       mySwitch.send(switch_send_D_on, 24);
       delay(DELAY_SWITCH);
       switch_D_state = true;
@@ -371,28 +381,32 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     // Alle Lichter
     if (device_id == 0)
     {
-      Serial.println("Alle Lichter AUS");
+      l.ln("Alle Lichter AUS");
       mySwitch.send(switch_send_A_off, 24);
       delay(DELAY_SWITCH);
       switch_A_state = false;
+
       mySwitch.send(switch_send_B_off, 24);
       delay(DELAY_SWITCH);
       switch_B_state = false;
-      mySwitch.send(switch_send_D_off, 24);
-      delay(DELAY_SWITCH);
-      switch_D_state = false;
+
       mySwitch.send(switch_send_C_off, 24);
       delay(DELAY_SWITCH);
       switch_C_state = false;
+
+      mySwitch.send(switch_send_D_off, 24);
+      delay(DELAY_SWITCH);
+      switch_D_state = false;
     }
 
     // Wohnzimmerlicht
     else if (device_id == 1)
     {
-      Serial.println("Wohnzimmerlicht AUS");
+      l.ln("Wohnzimmerlicht AUS");
       mySwitch.send(switch_send_A_off, 24);
       delay(DELAY_SWITCH);
       switch_A_state = false;
+
       mySwitch.send(switch_send_B_off, 24);
       delay(DELAY_SWITCH);
       switch_B_state = false;
@@ -401,7 +415,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     // Sofalicht
     else if (device_id == 2)
     {
-      Serial.println("Sofalicht AUS");
+      l.ln("Sofalicht AUS");
       mySwitch.send(switch_send_B_off, 24);
       delay(DELAY_SWITCH);
       switch_B_state = false;
@@ -410,16 +424,16 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     // Lichterkette
     else if (device_id == 3)
     {
-      Serial.println("Lichterkette AUS");
+      l.ln("Lichterkette AUS");
       mySwitch.send(switch_send_A_off, 24);
       delay(DELAY_SWITCH);
       switch_A_state = false;
     }
 
-    // Türlicht
+    // Tischregal
     else if (device_id == 4)
     {
-      Serial.println("Türlicht AUS");
+      l.ln("Tischregal AUS");
       mySwitch.send(switch_send_C_off, 24);
       delay(DELAY_SWITCH);
       switch_C_state = false;
@@ -428,7 +442,7 @@ void handleSwitchRequest(unsigned char device_id, bool state)
     // Galerielicht
     else if (device_id == 5)
     {
-      Serial.println("Galerielicht AUS");
+      l.ln("Galerielicht AUS");
       mySwitch.send(switch_send_D_off, 24);
       delay(DELAY_SWITCH);
       switch_D_state = false;
@@ -535,10 +549,6 @@ void setup()
 
   // WiFi
   wifiSetup();
-
-  // LED
-  pinMode(LED, OUTPUT);
-  digitalWrite(LED, HIGH);
 
   // OTA
   setupOTA();

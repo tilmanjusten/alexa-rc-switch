@@ -34,8 +34,8 @@ const devices = [
   },
   {
     'id': 4,
-    'name': 'Türlicht',
-    'name_id': 'tuerlicht'
+    'name': 'Tischregal',
+    'name_id': 'tischregal'
   },
   {
     'id': 5,

@@ -7,7 +7,7 @@ const devices = [{
     'wohnzimmerlicht',
     'sofalicht',
     'lichterkette',
-    'tuerlicht',
+    'tischregal',
     'galerielicht'
   ]
 }, {
@@ -31,8 +31,8 @@ const devices = [{
   'state': 'off'
 }, {
   'id': 4,
-  'name': 'Türlicht',
-  'name_id': 'tuerlicht',
+  'name': 'Tischregal',
+  'name_id': 'tischregal',
   'state': 'off'
 }, {
   'id': 5,
