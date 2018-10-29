@@ -38,8 +38,7 @@ Required libraries:
 
 ## Deployment
 
-1. Disable verbose logging: set ``MODE`` to ``MODE_PRODUCTION``
-1. Flash device
+See (development section above)[#Development].
 
 ## Hardware
 
@@ -50,6 +49,7 @@ Required libraries:
 - Voltage Regulator (AMS1117)
 - USB Micro Plug
 - 433.92MHz receiver (FS1000A)
+- 220&#8486; Resistor
 - Wires
 - RC Switches ([Amazon Affiliate Link](https://amzn.to/2OSig0y))
 - Plastic case
